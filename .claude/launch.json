@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "scoreboard", "runtimeExecutable": "python3", "runtimeArgs": ["/Users/ryandail/Documents/Fulton Scoreboard/server.py"], "port": 8765 }
+  ]
+}
