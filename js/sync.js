@@ -172,9 +172,20 @@
       const t0 = Date.now();
       fetch(base, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
         .then((r) => r.json())
-        .then((m) => { pending = queued ? 1 : 0; lastWrite = Date.now(); take(m, t0); })
-        .catch(() => { pending = queued ? 1 : 0; lastWrite = Date.now(); setStatus("offline"); })
-        .finally(() => { inflight = false; send(); });
+        .then((m) => { pending = queued ? 1 : 0; lastWrite = Date.now(); take(m, t0); return false; })
+        .catch(() => {
+          // Save failed (network blip): put it back ahead of newer changes and retry
+          if (body.set) {
+            if (!queued) queued = body;
+            else if (!queued.set) { applyPatch(body.set, queued.patch); queued = body; }
+          } else if (!(queued && queued.set)) {
+            queued = { patch: Object.assign({}, body.patch, (queued && queued.patch) || {}) };
+          }
+          pending = 1;
+          setStatus("offline");
+          return true;
+        })
+        .then((retry) => { inflight = false; retry ? setTimeout(send, 1500) : send(); });
     };
     const post = (body) => {
       pending = 1;
