@@ -7,7 +7,7 @@
 //                     syncs only between windows of the same browser.
 window.SB_CONFIG = {
   gameId: "fulton",   // change per game, or add ?game=xyz to both URLs
-  appsScriptUrl: "",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbxa0MS3w5602ahmVEMBmjAL3I0OwjTEk_qMH-cFCe9nsHQLqLmUja41q-eGbZdvTMVY/exec",
   pollMs: 1000,
   firebase: null
 };
