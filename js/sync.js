@@ -12,12 +12,12 @@
     title: "FULTON HIGH SCHOOL FOOTBALL",
     away: {
       name: "Morrison", mascot: "Mustangs", abbr: "MOR", record: "0-0",
-      primary: "#1C46A6", secondary: "#D7141E", logo: "assets/morrison.png",
+      primary: "#14378A", secondary: "#C8102E", logo: "assets/morrison.png",
       score: 0, timeouts: 3
     },
     home: {
       name: "Fulton", mascot: "Steamers", abbr: "FUL", record: "0-0",
-      primary: "#C8102E", secondary: "#111111", logo: "assets/steamers.png",
+      primary: "#A6081F", secondary: "#111111", logo: "assets/steamers.png",
       score: 0, timeouts: 3
     },
     quarter: "1",
