@@ -144,7 +144,6 @@
   function appsScriptBackend() {
     const base = CFG.appsScriptUrl + (CFG.appsScriptUrl.includes("?") ? "&" : "?") + "game=" + encodeURIComponent(GAME);
     let pending = 0, lastWrite = 0, bestRtt = Infinity, lastJson = "";
-    let chain = Promise.resolve();
     const take = (msg, t0) => {
       const t1 = Date.now(), rtt = t1 - t0;
       if (rtt <= bestRtt * 1.25) { bestRtt = Math.min(bestRtt, rtt); offset = msg.now - (t0 + t1) / 2; }
@@ -165,16 +164,24 @@
         .catch(() => setStatus("offline"))
         .finally(() => setTimeout(poll, CFG.pollMs || 1000));
     };
+    // One request in flight at a time; changes made meanwhile are merged into the next request
+    let inflight = false, queued = null;
+    const send = () => {
+      if (inflight || !queued) return;
+      const body = queued; queued = null; inflight = true;
+      const t0 = Date.now();
+      fetch(base, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+        .then((r) => r.json())
+        .then((m) => { pending = queued ? 1 : 0; lastWrite = Date.now(); take(m, t0); })
+        .catch(() => { pending = queued ? 1 : 0; lastWrite = Date.now(); setStatus("offline"); })
+        .finally(() => { inflight = false; send(); });
+    };
     const post = (body) => {
-      pending++;
-      chain = chain
-        .then(() => {
-          const t0 = Date.now();
-          return fetch(base, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
-            .then((r) => r.json())
-            .then((m) => { pending--; lastWrite = Date.now(); take(m, t0); });
-        })
-        .catch(() => { pending--; lastWrite = Date.now(); setStatus("offline"); });
+      pending = 1;
+      if (body.set) queued = body;
+      else if (queued && queued.set) applyPatch(queued.set, body.patch);
+      else queued = { patch: Object.assign((queued && queued.patch) || {}, body.patch) };
+      send();
     };
     poll();
     return {
