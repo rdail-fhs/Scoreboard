@@ -69,6 +69,17 @@ The badge at the top of the controller shows **● LIVE (Firebase)** when sync i
 ## Logos
 `assets/steamers.png` and `assets/morrison.png` are the team logos, with the white backgrounds removed. To use a different logo, replace the file or upload a new one from the controller.
 
+## Touchdown animations (Blender)
+When **TD +6** (or the TOUCHDOWN banner) is pressed, the show page plays that team's Blender animation full screen. If a team has no video, it uses the standard banner.
+
+- Template: `blender/touchdown_template.blend` (Broadcast v2, a copy of the original)
+- Script: `blender/make_touchdown.py` swaps the team color, logo (and the traced ghost outline), and plate name, then renders a transparent WebM
+- Videos: `assets/anim/<team>-td.webm`
+
+**New opponent:** double-click **Make Touchdown Animation.command**. Enter the name and color and pick the logo. It renders for a few minutes, then offers to publish. Then, in the controller under **Team & game setup**, set that team's **Touchdown animation video** to the path it shows you.
+
+Use a PNG logo with a transparent background. The ghost outline is traced from the transparency, and bigger logos look sharper.
+
 ## Run locally
 ```bash
 python3 -m http.server 8765

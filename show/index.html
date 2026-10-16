@@ -118,6 +118,12 @@
   }
   .info-on .info { clip-path: inset(0 0 0 0); }
 
+  /* Blender touchdown animations (transparent WebM), full stage */
+  .tdv { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; z-index: 20; pointer-events: none; visibility: hidden; }
+  .tdv.on { visibility: visible; }
+  .bug { transition: opacity .35s ease, transform .35s ease; }
+  .bug.away-for-td { opacity: 0; transform: translateX(-50%) translateY(30px); }
+
   /* event banner over the bug */
   .banner {
     --p: #111; --s: #fff;
@@ -154,6 +160,9 @@
     <div class="sub" id="hTitle"></div>
   </div>
 
+  <video class="tdv" id="td-home" muted playsinline preload="auto"></video>
+  <video class="tdv" id="td-away" muted playsinline preload="auto"></video>
+
   <div class="bug" id="bug">
     <div class="brand" id="brand"></div>
     <div class="info" id="info"></div>
@@ -188,8 +197,8 @@
   </div>
 </div>
 
-<script src="../js/config.js?v=10"></script>
-<script src="../js/sync.js?v=10"></script>
+<script src="../js/config.js?v=12"></script>
+<script src="../js/sync.js?v=12"></script>
 <script>
 (function () {
   const $ = (s, r = document) => r.querySelector(s);
@@ -243,8 +252,29 @@
     if (!b.ts || b.ts === lastBanner) return;
     lastBanner = b.ts;
     if (SB.now() - b.ts > 10000 || !b.text) return;
-    const el = $("#banner");
     const t = st[b.team];
+    if (b.text.toUpperCase() === "TOUCHDOWN" && t && t.tdVideo && playVideo(b.team, () => cssBanner(b, t))) return;
+    cssBanner(b, t);
+  }
+
+  // Plays the team's Blender animation; returns false (or calls fallback) if it can't
+  function playVideo(side, fallback) {
+    const v = $("#td-" + side);
+    if (!v || !v.src || v.error) return false;
+    document.querySelectorAll(".tdv.on").forEach((o) => { o.pause(); o.classList.remove("on"); });
+    const bug = $("#bug");
+    const done = () => { v.classList.remove("on"); bug.classList.remove("away-for-td"); };
+    v.currentTime = 0;
+    v.classList.add("on");
+    bug.classList.add("away-for-td"); // the animation sits where the score bar is
+    v.onended = done;
+    const p = v.play();
+    if (p) p.catch(() => { done(); fallback(); });
+    return true;
+  }
+
+  function cssBanner(b, t) {
+    const el = $("#banner");
     el.style.setProperty("--p", t ? t.primary : "#111");
     el.style.setProperty("--s", t ? t.secondary : "#F2B705");
     const img = $("img", el);
@@ -258,6 +288,10 @@
   function render(st) {
     renderTeam("away", st.away, st);
     renderTeam("home", st.home, st);
+    ["home", "away"].forEach((side) => {
+      const v = $("#td-" + side), u = SB.asset(st[side].tdVideo || "");
+      if (v.dataset.src !== u) { v.dataset.src = u; if (u) { v.src = u; v.load(); } else v.removeAttribute("src"); }
+    });
     setText($("#brand"), st.title || "");
     setText($("#qtr"), QTR[st.quarter] || String(st.quarter));
 
