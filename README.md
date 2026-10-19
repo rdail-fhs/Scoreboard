@@ -78,7 +78,7 @@ When **TD +6** (or the TOUCHDOWN banner) is pressed, the show page plays that te
 
 **New opponent:** double-click **Make Touchdown Animation.command**. Enter the name and color and pick the logo. It renders for a few minutes, then offers to publish. Then, in the controller under **Team & game setup**, set that team's **Touchdown animation video** to the path it shows you.
 
-Use a PNG logo with a transparent background. The ghost outline is traced from the transparency, and bigger logos look sharper.
+A PNG with a transparent background works best. If the logo has a white background, the launcher removes the outer white for you and keeps the white inside the logo. The ghost outline is traced from the transparency, and bigger logos look sharper.
 
 ## Run locally
 ```bash

@@ -12,7 +12,13 @@ LOGO=$(osascript -e 'POSIX path of (choose file with prompt "Choose the team log
 SLUG=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-*//; s/-*$//')
 EXT=$(echo "${LOGO##*.}" | tr '[:upper:]' '[:lower:]')
 mkdir -p assets/anim
-cp "$LOGO" "assets/$SLUG.$EXT"
+if sips -g hasAlpha "$LOGO" 2>/dev/null | grep -q "hasAlpha: yes"; then
+  cp "$LOGO" "assets/$SLUG.$EXT"
+else
+  echo "  Logo has a solid background; removing the outer white..."
+  EXT=png
+  "$B" -b --factory-startup --python blender/cutout_logo.py -- "$LOGO" "assets/$SLUG.png" >/dev/null 2>&1
+fi
 OUT="assets/anim/$SLUG-td.webm"
 
 echo ""
